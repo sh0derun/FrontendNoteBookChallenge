@@ -9,7 +9,8 @@
  */
 
 define(['ojs/ojresponsiveutils', 'ojs/ojresponsiveknockoututils', 'knockout', 'ojs/ojarraydataprovider', 
-        'ojs/ojknockout', 'ojs/ojchart', 'ojs/ojinputtext', 'ojs/ojbutton'],
+        'ojs/ojknockout', 'ojs/ojchart', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojmessages',
+        'ojs/ojpopup'],
   function(ResponsiveUtils, ResponsiveKnockoutUtils, ko, ArrayDataProvider) {
      function ControllerViewModel() {
        var self = this;
@@ -33,29 +34,48 @@ define(['ojs/ojresponsiveutils', 'ojs/ojresponsiveknockoututils', 'knockout', 'o
         console.log(newCode);
       });*/
       self.preparedData = ko.observableArray();
+      self.errors = ko.observableArray();
       
       self.buttonCliked = function(event){
+        var errors = [];
+        self.errors(errors);
         if(self.inputCode() !== ''){
-          self.chartType(event.currentTarget.id);
+
           var tmp = [];
 
           var rows = self.inputCode().split('\\n');
           var series = rows[0].split('\\t');
+          var counter = 0;
           for(var i = 0; i < series.length; i++){
             for(var j = 1; j < rows.length; j++){
               var row = rows[j].split('\\t');
-              var item = row[i];
-              tmp.push({ id: i+(j*series.length), series: series[i], group: 'Group'+j, value: parseInt(item) });
+              var item = parseInt(row[i]);
+              var dataRow = { id: counter++, series: series[i], group: null, quater: null, value: item };
+              if(event.currentTarget.id === 'bar'){
+                dataRow.group = 'group'+j;
+              } else if(event.currentTarget.id === 'area'){
+                dataRow.quater = 'quater'+j;
+              }
+              if(isNaN(dataRow.value)){
+                var nanValue = {
+                  severity: 'error',
+                  summary: 'data error',
+                  detail: 'Values cannot be alphanumeric, please enter just numeric values',
+                  autoTimeout: parseInt(ko.observable('0')(), 10)
+                };
+                errors.push(nanValue);
+                self.errors(errors);
+                return;
+              }
+              tmp.push(dataRow);
             }
           }
-          for(var i = 0; i < tmp.length; i++){
-            tmp[i].id = i;
-          }
         }
+        self.chartType(event.currentTarget.id);
         self.preparedData(tmp);
       };
-      
       self.dataSource = new ArrayDataProvider(self.preparedData, {keyAttributes: 'id'});
+      self.messagesDataprovider = new ArrayDataProvider(self.errors);
 
       // Footer
       function footerLink(name, id, linkTarget) {

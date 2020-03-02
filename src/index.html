@@ -74,11 +74,19 @@
         </div>
       </header>
       <div role="main" class="oj-web-applayout-max-width oj-web-applayout-content">
+
+        <div id="messages_anchor"></div>
+            <oj-messages id="oj-messages-id" messages="[[messagesDataprovider]]" display="notification"
+                         position='{"my":{"vertical" :"top", "horizontal": "end"}, 
+                                    "at": {"vertical": "top", "horizontal": "end"},
+                                    "of": "#messages_anchor"}'>
+            </oj-messages>
+            
         <oj-input-text id="text-input" value="{{inputCode}}"></oj-input-text> Display as:
         <oj-button id="bar" on-oj-action="{{buttonCliked}}">Bar-Chart</oj-button>
         <oj-button id="area" on-oj-action="{{buttonCliked}}">Area-Chart</oj-button>
         <oj-button id="pie" on-oj-action="{{buttonCliked}}">Pie-Chart</oj-button>
-        <oj-chart id="areaChart" 
+        <oj-chart id="[[chartType]]" 
                       type="[[chartType]]" 
                       data="[[dataSource]]"
                       animation-on-display="auto"
@@ -89,8 +97,9 @@
                       stack="on">
                   <template slot="itemTemplate" data-oj-as="item">
                       <oj-chart-item 
+                          id="[[item.data.id]]"
                           value="[[item.data.value]]"
-                          group-id="[[ [item.data.group] ]]"
+                          group-id="[[ [item.data.group ? item.data.group : item.data.quater] ]]"
                           series-id="[[item.data.series]]">
                       </oj-chart-item>
                   </template>
